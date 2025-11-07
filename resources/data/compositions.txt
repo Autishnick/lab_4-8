@@ -1,0 +1,15 @@
+1|SONG|Bohemian Rhapsody|Queen|ROCK|354|1975||false
+2|SONG|Billie Jean|Michael Jackson|POP|294|1983||false
+3|INSTRUMENTAL|Moonlight Sonata|Ludwig van Beethoven|CLASSICAL|900|1801|Piano
+4|REMIX|Blue Monday|New Order|ELECTRONIC|447|1983|New Order|88 Remix
+5|LIVE|Stairway to Heaven|Led Zeppelin|ROCK|482|1971|Madison Square Garden|1973-07-27
+6|SONG|Imagine|John Lennon|POP|183|1971||false
+7|SONG|Smells Like Teen Spirit|Nirvana|ROCK|301|1991||false
+8|INSTRUMENTAL|Flight of the Bumblebee|Nikolai Rimsky-Korsakov|CLASSICAL|96|1900|Orchestra
+9|SONG|Lose Yourself|Eminem|HIP_HOP|326|2002||false
+10|LIVE|One|Metallica|METAL|448|1988|The Fillmore|1989-06-10
+11|SONG|Sweet Child O' Mine|Guns N' Roses|ROCK|356|1987||false
+12|INSTRUMENTAL|Clair de Lune|Claude Debussy|CLASSICAL|300|1890|Piano
+13|REMIX|Sandstorm|Darude|ELECTRONIC|215|1999|Darude|Radio Edit
+14|SONG|No Woman No Cry|Bob Marley|REGGAE|237|1974||false
+15|SONG|Hotel California|Eagles|ROCK|391|1976||false

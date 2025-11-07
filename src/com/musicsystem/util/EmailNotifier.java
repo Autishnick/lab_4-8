@@ -1,0 +1,205 @@
+package com.musicsystem.util;
+
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+/**
+ * Email Notifier для відправки критичних помилок.
+ * Використовує JavaMail API якщо доступний, інакше просто логує в консоль.
+ */
+public class EmailNotifier {
+    private String emailTo;
+    private String emailFrom;
+    private String smtpHost;
+    private String smtpPort;
+    private String smtpUser;
+    private String smtpPassword;
+    private boolean javaMailAvailable;
+
+    public EmailNotifier(String emailTo, String emailFrom, String smtpHost,
+            String smtpPort, String smtpUser, String smtpPassword) {
+        this.emailTo = emailTo;
+        this.emailFrom = emailFrom;
+        this.smtpHost = smtpHost;
+        this.smtpPort = smtpPort;
+        this.smtpUser = smtpUser;
+        this.smtpPassword = smtpPassword;
+
+        // Перевіряємо чи доступний JavaMail
+        this.javaMailAvailable = checkJavaMailAvailability();
+    }
+
+    private boolean checkJavaMailAvailability() {
+        try {
+            Class.forName("javax.mail.Session");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public void sendCriticalError(String className, String message, String logEntry) {
+        // Якщо email налаштування не задані, просто пропускаємо
+        if (emailTo == null || emailFrom == null || smtpHost == null) {
+            System.err.println("Email налаштування не задані. Email не відправлено.");
+            return;
+        }
+
+        if (!javaMailAvailable) {
+            System.err.println("⚠️  JavaMail бібліотека не знайдена. Email не відправлено.");
+            System.err.println("   Для відправки email додайте javax.mail.jar до classpath.");
+            System.err.println("   Критична помилка: [" + className + "] " + message);
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                sendEmailViaJavaMail(className, message, logEntry);
+            } catch (Exception e) {
+                System.err.println("Помилка відправки email: " + e.getMessage());
+            }
+        }).start(); // Відправляємо асинхронно щоб не блокувати програму
+    }
+
+    private void sendEmailViaJavaMail(String className, String message, String logEntry) {
+        try {
+            // Використовуємо reflection для роботи з JavaMail без прямого імпорту
+            Class<?> sessionClass = Class.forName("javax.mail.Session");
+            Class<?> messageClass = Class.forName("javax.mail.Message");
+            Class<?> transportClass = Class.forName("javax.mail.Transport");
+            Class<?> mimeMessageClass = Class.forName("javax.mail.internet.MimeMessage");
+            Class<?> internetAddressClass = Class.forName("javax.mail.internet.InternetAddress");
+            Class<?> authenticatorClass = Class.forName("javax.mail.Authenticator");
+
+            java.util.Properties props = new java.util.Properties();
+            props.put("mail.smtp.host", smtpHost);
+            props.put("mail.smtp.port", smtpPort);
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.ssl.trust", smtpHost);
+
+            // Створюємо authenticator через reflection
+            Object authenticator = java.lang.reflect.Proxy.newProxyInstance(
+                    authenticatorClass.getClassLoader(),
+                    new Class<?>[] { authenticatorClass },
+                    (proxy, method, args) -> {
+                        if ("getPasswordAuthentication".equals(method.getName())) {
+                            Class<?> paClass = Class.forName("javax.mail.PasswordAuthentication");
+                            return paClass.getConstructor(String.class, String.class)
+                                    .newInstance(smtpUser, smtpPassword);
+                        }
+                        return null;
+                    });
+
+            // Створюємо сесію
+            Method getInstanceMethod = sessionClass.getMethod("getInstance",
+                    java.util.Properties.class, authenticatorClass);
+            Object session = getInstanceMethod.invoke(null, props, authenticator);
+
+            // Створюємо повідомлення
+            Object mailMessage = mimeMessageClass.getConstructor(sessionClass).newInstance(session);
+
+            Method setFromMethod = messageClass.getMethod("setFrom",
+                    Class.forName("javax.mail.Address"));
+            Object fromAddress = internetAddressClass.getConstructor(String.class).newInstance(emailFrom);
+            setFromMethod.invoke(mailMessage, fromAddress);
+
+            Method setRecipientsMethod = messageClass.getMethod("setRecipients",
+                    Class.forName("javax.mail.Message$RecipientType"),
+                    Class.forName("javax.mail.Address[]"));
+            Method parseMethod = internetAddressClass.getMethod("parse", String.class);
+            Object[] toAddresses = (Object[]) parseMethod.invoke(null, emailTo);
+            Object recipientType = Class.forName("javax.mail.Message$RecipientType")
+                    .getField("TO").get(null);
+            setRecipientsMethod.invoke(mailMessage, recipientType, toAddresses);
+
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+
+            Method setSubjectMethod = messageClass.getMethod("setSubject", String.class);
+            setSubjectMethod.invoke(mailMessage, "🚨 КРИТИЧНА ПОМИЛКА в Music System - " + timestamp);
+
+            String emailBody = buildEmailBody(className, message, logEntry, timestamp);
+            Method setContentMethod = messageClass.getMethod("setContent", Object.class, String.class);
+            setContentMethod.invoke(mailMessage, emailBody, "text/html; charset=utf-8");
+
+            // Відправляємо
+            Method sendMethod = transportClass.getMethod("send", messageClass);
+            sendMethod.invoke(null, mailMessage);
+
+            System.out.println("✓ Email з критичною помилкою відправлено на: " + emailTo);
+
+        } catch (Exception e) {
+            System.err.println("Помилка відправки email через JavaMail: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String buildEmailBody(String className, String message, String logEntry, String timestamp) {
+        StringBuilder body = new StringBuilder();
+        body.append("<!DOCTYPE html>");
+        body.append("<html><head><meta charset='UTF-8'></head><body>");
+        body.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>");
+
+        // Заголовок
+        body.append(
+                "<div style='background-color: #d32f2f; color: white; padding: 20px; border-radius: 5px 5px 0 0;'>");
+        body.append("<h2 style='margin: 0;'>🚨 КРИТИЧНА ПОМИЛКА</h2>");
+        body.append("<p style='margin: 5px 0 0 0;'>Music System Management</p>");
+        body.append("</div>");
+
+        // Основна інформація
+        body.append("<div style='background-color: #f5f5f5; padding: 20px; border-radius: 0 0 5px 5px;'>");
+
+        body.append(
+                "<div style='background-color: white; padding: 15px; margin-bottom: 15px; border-left: 4px solid #d32f2f;'>");
+        body.append("<p style='margin: 0 0 10px 0;'><strong>Час:</strong> ").append(timestamp).append("</p>");
+        body.append("<p style='margin: 0 0 10px 0;'><strong>Клас:</strong> ").append(className).append("</p>");
+        body.append("<p style='margin: 0;'><strong>Повідомлення:</strong></p>");
+        body.append("<p style='margin: 5px 0; color: #d32f2f; font-weight: bold;'>").append(escapeHtml(message))
+                .append("</p>");
+        body.append("</div>");
+
+        // Лог запис
+        body.append(
+                "<div style='background-color: #263238; color: #aed581; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;'>");
+        body.append("<p style='margin: 0 0 5px 0; color: #90a4ae;'><strong>Лог запис:</strong></p>");
+        body.append("<pre style='margin: 0; white-space: pre-wrap; word-wrap: break-word;'>")
+                .append(escapeHtml(logEntry)).append("</pre>");
+        body.append("</div>");
+
+        // Рекомендації
+        body.append(
+                "<div style='background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; margin-top: 15px; border-radius: 5px;'>");
+        body.append("<p style='margin: 0; color: #856404;'><strong>⚠️ Рекомендовані дії:</strong></p>");
+        body.append("<ul style='margin: 10px 0 0 0; color: #856404;'>");
+        body.append("<li>Перевірте лог-файл для деталей</li>");
+        body.append("<li>Перевірте стан системи</li>");
+        body.append("<li>За необхідності перезапустіть додаток</li>");
+        body.append("</ul>");
+        body.append("</div>");
+
+        body.append("</div>");
+
+        // Футер
+        body.append("<div style='text-align: center; padding: 20px; color: #999; font-size: 12px;'>");
+        body.append("<p style='margin: 0;'>Це автоматичне повідомлення від Music System Management</p>");
+        body.append("<p style='margin: 5px 0 0 0;'>Будь ласка, не відповідайте на цей email</p>");
+        body.append("</div>");
+
+        body.append("</div>");
+        body.append("</body></html>");
+
+        return body.toString();
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null)
+            return "";
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#x27;");
+    }
+}

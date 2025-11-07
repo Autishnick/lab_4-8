@@ -1,0 +1,4 @@
+1|SONG|Bohemian Rhapsody|цуацуа|ELECTRONIC|354|1975||false
+2|SONG|Billie Jean|Michael Jackson|POP|294|1983||false
+4|REMIX|Blue Monday|New Order|ELECTRONIC|447|1983|New Order|88 Remix
+5|LIVE|Stairway to Heaven|Led Zeppelin|ROCK|482|1971|Madison Square Garden|1973-07-27
