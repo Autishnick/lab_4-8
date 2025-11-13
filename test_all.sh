@@ -25,14 +25,14 @@ echo "════════════════════════�
 echo "3️⃣  ПЕРЕВІРКА EMAIL СПОВІЩЕНЬ"
 echo "═══════════════════════════════════════════════════════════"
 echo "📦 Компіляція тестового класу..."
-javac -cp "libs/javax.mail-1.6.2.jar" -d bin -encoding UTF-8 -sourcepath src src/com/musicsystem/TestEmailAndLogging.java
+javac -cp "libs/javax.mail-1.6.2.jar:libs/activation-1.1.1.jar" -d bin -encoding UTF-8 -sourcepath src src/com/musicsystem/TestEmailAndLogging.java
 
 if [ $? -eq 0 ]; then
     echo "✅ Компіляція успішна!"
     echo ""
     echo "🚀 Запуск тесту логування та email..."
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    java -cp "bin:libs/javax.mail-1.6.2.jar" com.musicsystem.TestEmailAndLogging
+    java -cp "bin:libs/javax.mail-1.6.2.jar:libs/activation-1.1.1.jar" com.musicsystem.TestEmailAndLogging
 else
     echo "❌ Помилка компіляції!"
 fi

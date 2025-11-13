@@ -8,7 +8,7 @@ import java.util.Properties;
 public class ConfigManager {
     private static ConfigManager instance;
     private Properties properties;
-    private static final String CONFIG_FILE = "resources/config.properties";
+    private static final String CONFIG_FILE = "resources/data/config.properties";
 
     private ConfigManager() {
         properties = new Properties();

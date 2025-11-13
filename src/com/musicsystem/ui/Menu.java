@@ -47,7 +47,7 @@ public class Menu {
         while (running) {
             displayMenu();
 
-            int choice = validator.readInt("\nВиберіть опцію: ", 0, 16);
+            int choice = validator.readInt("\nВиберіть опцію: ", 0, 18);
             logger.debug(CLASS_NAME, "Користувач обрав опцію меню: " + choice);
 
             Command command = getCommand(choice);
@@ -120,6 +120,10 @@ public class Menu {
                 return new LoadFromFileCommand(collection, fileManager, validator);
             case 16:
                 return new SaveToFileCommand(collection, fileManager, validator);
+            case 17:
+                return new RunUnitTestsCommand(validator);
+            case 18:
+                return new TestEmailCommand(validator);
             default:
                 return null;
         }
@@ -156,6 +160,11 @@ public class Menu {
         System.out.println("│  14. Показати статистику колекції");
         System.out.println("│  15. Завантажити з файлу");
         System.out.println("│  16. Зберегти у файл");
+
+        System.out.println("│");
+        System.out.println("┌─ ТЕСТУВАННЯ");
+        System.out.println("│  17. 🧪 Запустити юніт-тести");
+        System.out.println("│  18. 📧 Тест email-розсилки");
 
         System.out.println("│");
         System.out.println("└─ 0.  Вихід");

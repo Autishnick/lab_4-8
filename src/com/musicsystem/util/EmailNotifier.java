@@ -1,8 +1,16 @@
 package com.musicsystem.util;
 
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
+
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 /**
  * Email Notifier для відправки критичних помилок.
@@ -33,6 +41,7 @@ public class EmailNotifier {
     private boolean checkJavaMailAvailability() {
         try {
             Class.forName("javax.mail.Session");
+            Class.forName("javax.activation.DataHandler");
             return true;
         } catch (ClassNotFoundException e) {
             return false;
@@ -48,7 +57,7 @@ public class EmailNotifier {
 
         if (!javaMailAvailable) {
             System.err.println("⚠️  JavaMail бібліотека не знайдена. Email не відправлено.");
-            System.err.println("   Для відправки email додайте javax.mail.jar до classpath.");
+            System.err.println("   Для відправки email додайте javax.mail.jar та activation.jar до classpath.");
             System.err.println("   Критична помилка: [" + className + "] " + message);
             return;
         }
@@ -58,74 +67,33 @@ public class EmailNotifier {
                 sendEmailViaJavaMail(className, message, logEntry);
             } catch (Exception e) {
                 System.err.println("Помилка відправки email: " + e.getMessage());
+                e.printStackTrace();
             }
         }).start(); // Відправляємо асинхронно щоб не блокувати програму
     }
 
     private void sendEmailViaJavaMail(String className, String message, String logEntry) {
         try {
-            // Використовуємо reflection для роботи з JavaMail без прямого імпорту
-            Class<?> sessionClass = Class.forName("javax.mail.Session");
-            Class<?> messageClass = Class.forName("javax.mail.Message");
-            Class<?> transportClass = Class.forName("javax.mail.Transport");
-            Class<?> mimeMessageClass = Class.forName("javax.mail.internet.MimeMessage");
-            Class<?> internetAddressClass = Class.forName("javax.mail.internet.InternetAddress");
-            Class<?> authenticatorClass = Class.forName("javax.mail.Authenticator");
+            // Створюємо сесію та повідомлення
+            Session session = createMailSession();
+            Message mailMessage = new MimeMessage(session);
 
-            java.util.Properties props = new java.util.Properties();
-            props.put("mail.smtp.host", smtpHost);
-            props.put("mail.smtp.port", smtpPort);
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.ssl.trust", smtpHost);
+            // Налаштування відправника та отримувача
+            mailMessage.setFrom(new InternetAddress(emailFrom));
+            mailMessage.setRecipients(
+                    Message.RecipientType.TO,
+                    InternetAddress.parse(emailTo));
 
-            // Створюємо authenticator через reflection
-            Object authenticator = java.lang.reflect.Proxy.newProxyInstance(
-                    authenticatorClass.getClassLoader(),
-                    new Class<?>[] { authenticatorClass },
-                    (proxy, method, args) -> {
-                        if ("getPasswordAuthentication".equals(method.getName())) {
-                            Class<?> paClass = Class.forName("javax.mail.PasswordAuthentication");
-                            return paClass.getConstructor(String.class, String.class)
-                                    .newInstance(smtpUser, smtpPassword);
-                        }
-                        return null;
-                    });
-
-            // Створюємо сесію
-            Method getInstanceMethod = sessionClass.getMethod("getInstance",
-                    java.util.Properties.class, authenticatorClass);
-            Object session = getInstanceMethod.invoke(null, props, authenticator);
-
-            // Створюємо повідомлення
-            Object mailMessage = mimeMessageClass.getConstructor(sessionClass).newInstance(session);
-
-            Method setFromMethod = messageClass.getMethod("setFrom",
-                    Class.forName("javax.mail.Address"));
-            Object fromAddress = internetAddressClass.getConstructor(String.class).newInstance(emailFrom);
-            setFromMethod.invoke(mailMessage, fromAddress);
-
-            Method setRecipientsMethod = messageClass.getMethod("setRecipients",
-                    Class.forName("javax.mail.Message$RecipientType"),
-                    Class.forName("javax.mail.Address[]"));
-            Method parseMethod = internetAddressClass.getMethod("parse", String.class);
-            Object[] toAddresses = (Object[]) parseMethod.invoke(null, emailTo);
-            Object recipientType = Class.forName("javax.mail.Message$RecipientType")
-                    .getField("TO").get(null);
-            setRecipientsMethod.invoke(mailMessage, recipientType, toAddresses);
-
+            // Тема листа
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+            mailMessage.setSubject("🚨 КРИТИЧНА ПОМИЛКА в Music System - " + timestamp);
 
-            Method setSubjectMethod = messageClass.getMethod("setSubject", String.class);
-            setSubjectMethod.invoke(mailMessage, "🚨 КРИТИЧНА ПОМИЛКА в Music System - " + timestamp);
-
+            // Тіло листа
             String emailBody = buildEmailBody(className, message, logEntry, timestamp);
-            Method setContentMethod = messageClass.getMethod("setContent", Object.class, String.class);
-            setContentMethod.invoke(mailMessage, emailBody, "text/html; charset=utf-8");
+            mailMessage.setContent(emailBody, "text/html; charset=utf-8");
 
-            // Відправляємо
-            Method sendMethod = transportClass.getMethod("send", messageClass);
-            sendMethod.invoke(null, mailMessage);
+            // Відправка
+            Transport.send(mailMessage);
 
             System.out.println("✓ Email з критичною помилкою відправлено на: " + emailTo);
 
@@ -133,6 +101,23 @@ public class EmailNotifier {
             System.err.println("Помилка відправки email через JavaMail: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Session createMailSession() {
+        Properties props = new Properties();
+        props.put("mail.smtp.host", smtpHost);
+        props.put("mail.smtp.port", smtpPort);
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.trust", smtpHost);
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+
+        return Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(smtpUser, smtpPassword);
+            }
+        });
     }
 
     private String buildEmailBody(String className, String message, String logEntry, String timestamp) {

@@ -2,7 +2,7 @@
 # Скрипт компіляції з JavaMail
 
 echo "📦 Компіляція Music System (з JavaMail)..."
-javac -cp "libs/javax.mail-1.6.2.jar" \
+javac -cp "libs/javax.mail-1.6.2.jar:libs/activation-1.1.1.jar" \
       -d bin \
       -encoding UTF-8 \
       -sourcepath src \
