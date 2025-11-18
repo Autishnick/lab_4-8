@@ -13,11 +13,11 @@ import com.musicsystem.model.Remix;
 import com.musicsystem.model.Song;
 import com.musicsystem.service.MusicCollection;
 import com.musicsystem.util.InputValidator;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AddCompositionCommand implements Command {
-    private static final String CLASS_NAME = "AddCompositionCommand";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(AddCompositionCommand.class);
 
     private MusicCollection collection;
     private InputValidator validator;
@@ -29,7 +29,7 @@ public class AddCompositionCommand implements Command {
 
     @Override
     public void execute() {
-        logger.info(CLASS_NAME, "Виконання команди додавання композиції");
+        logger.debug("Виконання команди додавання композиції");
         System.out.println("\n=== ДОДАВАННЯ КОМПОЗИЦІЇ ===\n");
 
         System.out.println("Оберіть тип композиції:");
@@ -94,12 +94,12 @@ public class AddCompositionCommand implements Command {
             }
 
             collection.add(composition);
-            logger.info(CLASS_NAME, "✓ Композицію успішно додано: " + composition.getTitle());
+            logger.debug("Композицію успішно додано: " + composition.getTitle());
             System.out.println("\n✓ Композицію успішно додано!");
             System.out.println(composition.getInfo());
 
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Помилка додавання композиції: " + e.getMessage(), e);
+            logger.error("Помилка додавання композиції: " + e.getMessage(), e);
             System.out.println("\n✗ Помилка додавання: " + e.getMessage());
         }
     }

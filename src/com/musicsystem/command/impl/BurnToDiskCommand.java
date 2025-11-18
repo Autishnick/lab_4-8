@@ -9,11 +9,11 @@ import com.musicsystem.model.DiskType;
 import com.musicsystem.service.CompilationManager;
 import com.musicsystem.service.DiskManager;
 import com.musicsystem.util.InputValidator;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class BurnToDiskCommand implements Command {
-    private static final String CLASS_NAME = "BurnToDiskCommand";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(BurnToDiskCommand.class);
 
     private CompilationManager compilationManager;
     private DiskManager diskManager;
@@ -29,11 +29,11 @@ public class BurnToDiskCommand implements Command {
 
     @Override
     public void execute() {
-        logger.info(CLASS_NAME, "Виконання команди запису збірки на диск");
+        logger.debug("Виконання команди запису збірки на диск");
         System.out.println("\n=== ЗАПИС ЗБІРКИ НА ДИСК ===\n");
 
         if (compilationManager.isEmpty()) {
-            logger.warn(CLASS_NAME, "Спроба записати на диск при відсутності збірок");
+            logger.debug("Спроба записати на диск при відсутності збірок");
             System.out.println("Немає створених збірок.");
             return;
         }
@@ -50,13 +50,13 @@ public class BurnToDiskCommand implements Command {
                 0, compilations.size());
 
         if (compChoice == 0) {
-            logger.info(CLASS_NAME, "Користувач скасував запис на диск");
+            logger.debug("Користувач скасував запис на диск");
             System.out.println("Запис скасовано.");
             return;
         }
 
         Compilation compilation = compilations.get(compChoice - 1);
-        logger.info(CLASS_NAME, "Обрано збірку для запису: " + compilation.getName());
+        logger.debug("Обрано збірку для запису: " + compilation.getName());
 
         System.out.println("\nОберіть тип диску:");
         DiskType[] diskTypes = DiskType.values();
@@ -84,27 +84,27 @@ public class BurnToDiskCommand implements Command {
         boolean confirm = validator.readBoolean("\nПродовжити запис?");
 
         if (!confirm) {
-            logger.info(CLASS_NAME, "Користувач скасував запис після підтвердження");
+            logger.debug("Користувач скасував запис після підтвердження");
             System.out.println("\nЗапис скасовано.");
             return;
         }
 
         try {
-            logger.info(CLASS_NAME, "Початок запису збірки '" + compilation.getName() + "' на диск " + selectedType);
+            logger.debug("Початок запису збірки '" + compilation.getName() + "' на диск " + selectedType);
             Disk disk = diskManager.burnCompilation(compilation, selectedType);
 
             System.out.println("\n✓ Збірку успішно записано на диск!");
             System.out.println("\n" + disk.getInfo());
-            logger.info(CLASS_NAME, "✓ Збірку успішно записано на диск ID: " + disk.getId());
+            logger.debug("Збірку успішно записано на диск ID: " + disk.getId());
 
         } catch (IllegalArgumentException e) {
-            logger.error(CLASS_NAME, "Помилка запису: збірка не вміщується на диск", e);
+            logger.error("Помилка запису: збірка не вміщується на диск", e);
             System.out.println("\n✗ Помилка запису: " + e.getMessage());
             System.out.println("\nСпробуйте:");
             System.out.println("- Обрати диск більшої місткості");
             System.out.println("- Видалити деякі треки зі збірки");
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Невідома помилка при записі на диск", e);
+            logger.error("Невідома помилка при записі на диск", e);
             System.out.println("\n✗ Невідома помилка: " + e.getMessage());
         }
 

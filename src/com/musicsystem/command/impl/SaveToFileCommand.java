@@ -4,11 +4,11 @@ import com.musicsystem.command.Command;
 import com.musicsystem.service.MusicCollection;
 import com.musicsystem.util.FileManager;
 import com.musicsystem.util.InputValidator;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SaveToFileCommand implements Command {
-    private static final String CLASS_NAME = "SaveToFileCommand";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(SaveToFileCommand.class);
     
     private MusicCollection collection;
     private FileManager fileManager;
@@ -24,11 +24,11 @@ public class SaveToFileCommand implements Command {
 
     @Override
     public void execute() {
-        logger.info(CLASS_NAME, "Виконання команди збереження у файл");
+        logger.info("Виконання команди збереження у файл");
         System.out.println("\n=== ЗБЕРЕЖЕННЯ У ФАЙЛ ===\n");
 
         if (collection.isEmpty()) {
-            logger.warn(CLASS_NAME, "Спроба зберегти порожню колекцію");
+            logger.warn("Спроба зберегти порожню колекцію");
             System.out.println("Колекція порожня. Нічого зберігати.");
             return;
         }
@@ -41,20 +41,20 @@ public class SaveToFileCommand implements Command {
         int choice = validator.readInt("Ваш вибір: ", 0, 2);
 
         if (choice == 0) {
-            logger.info(CLASS_NAME, "Користувач скасував збереження");
+            logger.info("Користувач скасував збереження");
             System.out.println("Збереження скасовано.");
             return;
         }
 
         try {
             if (choice == 1) {
-                logger.info(CLASS_NAME, "Збереження у файл за замовчуванням");
+                logger.info("Збереження у файл за замовчуванням");
                 fileManager.saveToDefaultFile(collection);
                 System.out.println("\n✓ Дані успішно збережено у файл за замовчуванням!");
 
             } else {
                 String filename = validator.readNonEmptyString("Введіть шлях до файлу: ");
-                logger.info(CLASS_NAME, "Збереження у файл: " + filename);
+                logger.info("Збереження у файл: " + filename);
                 fileManager.saveToFile(collection, filename);
                 System.out.println("\n✓ Дані успішно збережено у файл: " + filename);
             }
@@ -62,7 +62,7 @@ public class SaveToFileCommand implements Command {
             System.out.println("Збережено композицій: " + collection.getTotalCount());
 
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Помилка збереження файлу: " + e.getMessage(), e);
+            logger.error("Помилка збереження файлу: " + e.getMessage(), e);
             System.out.println("\n✗ Помилка збереження: " + e.getMessage());
         }
 

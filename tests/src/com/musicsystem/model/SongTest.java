@@ -186,7 +186,7 @@ class SongTest {
                 () -> assertNotNull(info),
                 () -> assertTrue(info.contains("Bohemian Rhapsody")),
                 () -> assertTrue(info.contains("Queen")),
-                () -> assertTrue(info.contains("ROCK"))
+                () -> assertTrue(info.contains("Rock"))
         );
     }
 

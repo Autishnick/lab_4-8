@@ -1,5 +1,8 @@
 package com.musicsystem.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,10 +22,11 @@ import com.musicsystem.model.MusicStyle;
 import com.musicsystem.model.Remix;
 import com.musicsystem.model.Song;
 import com.musicsystem.service.MusicCollection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class FileManager {
-    private static final String CLASS_NAME = "FileManager";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(FileManager.class);
     private static final String DELIMITER = "\\|";
     private final String DEFAULT_FILE;
 
@@ -32,14 +36,14 @@ public class FileManager {
     }
 
     public void saveToFile(MusicCollection collection, String filename) throws IOException {
-        logger.info(CLASS_NAME, "Початок збереження колекції у файл: " + filename);
+        logger.info("Початок збереження колекції у файл: " + filename);
 
         try {
             File file = new File(filename);
             file.getParentFile().mkdirs();
 
             int compositionCount = collection.getAll().size();
-            logger.debug(CLASS_NAME, "Кількість композицій для збереження: " + compositionCount);
+            logger.debug("Кількість композицій для збереження: " + compositionCount);
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 for (MusicComposition composition : collection.getAll()) {
@@ -48,28 +52,28 @@ public class FileManager {
                 }
             }
 
-            logger.info(CLASS_NAME, "✓ Успішно збережено " + compositionCount + " композицій у файл: " + filename);
+            logger.info("✓ Успішно збережено " + compositionCount + " композицій у файл: " + filename);
 
         } catch (IOException e) {
-            logger.error(CLASS_NAME, "Помилка збереження колекції у файл: " + filename, e);
+            logger.error("Помилка збереження колекції у файл: " + filename, e);
             throw e;
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Неочікувана помилка при збереженні у файл: " + filename, e);
+            logger.error("Неочікувана помилка при збереженні у файл: " + filename, e);
             throw new IOException("Неочікувана помилка збереження", e);
         }
     }
 
     public void saveToDefaultFile(MusicCollection collection) throws IOException {
-        logger.info(CLASS_NAME, "Збереження у файл за замовчуванням: " + DEFAULT_FILE);
+        logger.info("Збереження у файл за замовчуванням: " + DEFAULT_FILE);
         saveToFile(collection, DEFAULT_FILE);
     }
 
     public void loadFromFile(MusicCollection collection, String filename) throws IOException {
-        logger.info(CLASS_NAME, "Початок завантаження колекції з файлу: " + filename);
+        logger.info("Початок завантаження колекції з файлу: " + filename);
 
         File file = new File(filename);
         if (!file.exists()) {
-            logger.error(CLASS_NAME, "Файл не знайдено: " + filename);
+            logger.error("Файл не знайдено: " + filename);
             throw new FileNotFoundException("Файл не знайдено: " + filename);
         }
 
@@ -92,33 +96,31 @@ public class FileManager {
                     if (composition != null) {
                         collection.add(composition);
                         loadedCount++;
-                        logger.debug(CLASS_NAME,
-                                "Завантажено композицію #" + lineNumber + ": " + composition.getTitle());
+                        logger.debug("Завантажено композицію #" + lineNumber + ": " + composition.getTitle());
                     }
                 } catch (Exception e) {
                     errorCount++;
                     String errorMsg = "Помилка парсингу рядка #" + lineNumber + ": " + e.getMessage();
-                    logger.warn(CLASS_NAME, errorMsg);
+                    logger.warn(errorMsg);
                     System.err.println(errorMsg);
                     System.err.println("Рядок: " + line);
                 }
             }
 
             if (errorCount > 0) {
-                logger.warn(CLASS_NAME,
-                        "Завантаження завершено з помилками. Завантажено: " + loadedCount + ", Помилок: " + errorCount);
+                logger.warn("Завантаження завершено з помилками. Завантажено: " + loadedCount + ", Помилок: " + errorCount);
             } else {
-                logger.info(CLASS_NAME, "✓ Успішно завантажено " + loadedCount + " композицій з файлу: " + filename);
+                logger.info("✓ Успішно завантажено " + loadedCount + " композицій з файлу: " + filename);
             }
 
         } catch (IOException e) {
-            logger.error(CLASS_NAME, "Помилка читання файлу: " + filename, e);
+            logger.error("Помилка читання файлу: " + filename, e);
             throw e;
         }
     }
 
     public void loadFromDefaultFile(MusicCollection collection) throws IOException {
-        logger.info(CLASS_NAME, "Завантаження з файлу за замовчуванням: " + DEFAULT_FILE);
+        logger.info("Завантаження з файлу за замовчуванням: " + DEFAULT_FILE);
         loadFromFile(collection, DEFAULT_FILE);
     }
 
@@ -168,7 +170,7 @@ public class FileManager {
                     break;
 
                 default:
-                    logger.warn(CLASS_NAME, "Невідомий тип композиції: " + type + ", створено як Song");
+                    logger.warn("Невідомий тип композиції: " + type + ", створено як Song");
                     composition = new Song(title, artist, style, duration, year);
                     break;
             }
@@ -177,10 +179,10 @@ public class FileManager {
             return composition;
 
         } catch (NumberFormatException e) {
-            logger.error(CLASS_NAME, "Помилка парсингу числових даних: " + e.getMessage());
+            logger.error("Помилка парсингу числових даних: " + e.getMessage());
             throw new IllegalArgumentException("Невірний формат числових даних: " + e.getMessage(), e);
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Помилка парсингу композиції: " + e.getMessage());
+            logger.error("Помилка парсингу композиції: " + e.getMessage());
             throw e;
         }
     }
@@ -188,27 +190,26 @@ public class FileManager {
     public void createDefaultFile() {
         File file = new File(DEFAULT_FILE);
         if (file.exists()) {
-            logger.debug(CLASS_NAME, "Файл за замовчуванням вже існує: " + DEFAULT_FILE);
+            logger.debug("Файл за замовчуванням вже існує: " + DEFAULT_FILE);
             return;
         }
 
-        logger.info(CLASS_NAME, "Створення файлу за замовчуванням з прикладами композицій...");
+        logger.info("Створення файлу за замовчуванням з прикладами композицій...");
 
         try {
             file.getParentFile().mkdirs();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                // Приклади композицій
                 writer.write("1|SONG|Bohemian Rhapsody|Queen|ROCK|354|1975||false\n");
                 writer.write("2|SONG|Billie Jean|Michael Jackson|POP|294|1983||false\n");
                 writer.write("3|INSTRUMENTAL|Moonlight Sonata|Ludwig van Beethoven|CLASSICAL|900|1801|Piano\n");
                 writer.write("4|REMIX|Blue Monday|New Order|ELECTRONIC|447|1983|New Order|88 Remix\n");
                 writer.write("5|LIVE|Stairway to Heaven|Led Zeppelin|ROCK|482|1971|Madison Square Garden|1973-07-27\n");
             }
-            logger.info(CLASS_NAME, "✓ Створено файл з прикладами: " + DEFAULT_FILE);
+            logger.debug("Створено файл з прикладами: " + DEFAULT_FILE);
             System.out.println("Створено файл з прикладами: " + DEFAULT_FILE);
 
         } catch (IOException e) {
-            logger.error(CLASS_NAME, "Помилка створення файлу за замовчуванням: " + DEFAULT_FILE, e);
+            logger.error("Помилка створення файлу за замовчуванням: " + DEFAULT_FILE, e);
             System.err.println("Помилка створення файлу: " + e.getMessage());
         }
     }

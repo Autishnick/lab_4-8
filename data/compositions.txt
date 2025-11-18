@@ -1,1 +1,4 @@
-1|SONG|1|1|ROCK|732|1999|122цуацауца|true
+151|SONG|Test Song|Test Artist|ROCK|180|2020|Lyrics|true
+152|INSTRUMENTAL|Test Instrumental|Composer|CLASSICAL|300|1900|Piano;Violin
+153|REMIX|Test Remix|Artist|ELECTRONIC|240|2010|Original Artist|Remixer
+154|LIVE|Test Live|Band|ROCK|400|2015|Stadium|2015-06-15

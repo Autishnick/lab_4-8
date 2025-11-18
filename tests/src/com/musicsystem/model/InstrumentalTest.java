@@ -16,7 +16,7 @@ class InstrumentalTest {
     @BeforeEach
     void setUp() {
         instrumental = new Instrumental("Moonlight Sonata", "Beethoven",
-                MusicStyle.CLASSICAL, 900, 1801);
+                MusicStyle.CLASSICAL, 900, 1901);
     }
 
     @Test

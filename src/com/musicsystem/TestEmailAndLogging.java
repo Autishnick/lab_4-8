@@ -1,17 +1,11 @@
-// noinspection SpellCheckingInspection
 package com.musicsystem;
 
-// noinspection SpellCheckingInspection
-import com.musicsystem.util.Logger;
-// noinspection SpellCheckingInspection
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.musicsystem.util.LogLevel;
 
-/**
- * Тестовий клас для перевірки логування та email розсилки
- */
 public class TestEmailAndLogging {
-    private static final String CLASS_NAME = "TestEmailAndLogging";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(TestEmailAndLogging.class);
 
     public static void main(String[] args) {
         System.out.println("╔════════════════════════════════════════════════════════════╗");
@@ -19,13 +13,8 @@ public class TestEmailAndLogging {
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.println();
 
-        // Перевірка всіх рівнів логування
         testAllLogLevels();
-
-        // Перевірка логування з винятками
         testExceptionLogging();
-
-        // Перевірка FATAL (відправить email якщо налаштовано)
         testFatalError();
 
         System.out.println();
@@ -40,8 +29,10 @@ public class TestEmailAndLogging {
         System.out.println("   2. Email (якщо налаштовано): перевірте пошту");
         System.out.println();
         System.out.println("📊 Поточні налаштування:");
-        System.out.println("   - Рівень логування: " + logger.getCurrentLevel());
-        System.out.println("   - Шлях до логів: " + logger.getLogFilePath());
+        String logLevel = System.getProperty("log.level", "INFO");
+        String logFilePath = System.getProperty("log.file.path", "logs/application.log");
+        System.out.println("   - Рівень логування: " + logLevel);
+        System.out.println("   - Шлях до логів: " + logFilePath);
         System.out.println();
     }
 
@@ -50,10 +41,10 @@ public class TestEmailAndLogging {
         System.out.println("🔍 Тест 1: Перевірка всіх рівнів логування");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         
-        logger.debug(CLASS_NAME, "DEBUG: Це детальне повідомлення для налагодження");
-        logger.info(CLASS_NAME, "INFO: Інформаційне повідомлення про роботу системи");
-        logger.warn(CLASS_NAME, "WARN: Попередження про потенційну проблему");
-        logger.error(CLASS_NAME, "ERROR: Помилка, яка не критична для системи");
+        logger.debug("DEBUG: Це детальне повідомлення для налагодження");
+        logger.info("INFO: Інформаційне повідомлення про роботу системи");
+        logger.warn("WARN: Попередження про потенційну проблему");
+        logger.error("ERROR: Помилка, яка не критична для системи");
         
         System.out.println("✅ Записано логи всіх рівнів (DEBUG, INFO, WARN, ERROR)");
         System.out.println();
@@ -65,10 +56,9 @@ public class TestEmailAndLogging {
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         
         try {
-            // Штучно створюємо виняток
             throw new RuntimeException("Тестовий виняток для перевірки логування");
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Перехоплено тестовий виняток", e);
+            logger.error("Перехоплено тестовий виняток", e);
             System.out.println("✅ Виняток залогований");
         }
         System.out.println();
@@ -83,15 +73,13 @@ public class TestEmailAndLogging {
         System.out.println("   (Якщо JavaMail не встановлено, email не відправиться, але це нормально)");
         System.out.println();
         
-        // Пауза для читабельності
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         
-        // Це відправить email якщо налаштовано
-        logger.fatal(CLASS_NAME, "🧪 ТЕСТОВА КРИТИЧНА ПОМИЛКА - це тест системи логування");
+        logger.fatal("🧪 ТЕСТОВА КРИТИЧНА ПОМИЛКА - це тест системи логування");
         
         System.out.println();
         System.out.println("✅ FATAL лог записано");

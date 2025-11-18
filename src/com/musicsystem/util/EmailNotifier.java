@@ -12,10 +12,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-/**
- * Email Notifier для відправки критичних помилок.
- * Використовує JavaMail API якщо доступний, інакше просто логує в консоль.
- */
 public class EmailNotifier {
     private String emailTo;
     private String emailFrom;
@@ -34,7 +30,6 @@ public class EmailNotifier {
         this.smtpUser = smtpUser;
         this.smtpPassword = smtpPassword;
 
-        // Перевіряємо чи доступний JavaMail
         this.javaMailAvailable = checkJavaMailAvailability();
     }
 
@@ -49,7 +44,6 @@ public class EmailNotifier {
     }
 
     public void sendCriticalError(String className, String message, String logEntry) {
-        // Якщо email налаштування не задані, просто пропускаємо
         if (emailTo == null || emailFrom == null || smtpHost == null) {
             System.err.println("Email налаштування не задані. Email не відправлено.");
             return;
@@ -69,30 +63,25 @@ public class EmailNotifier {
                 System.err.println("Помилка відправки email: " + e.getMessage());
                 e.printStackTrace();
             }
-        }).start(); // Відправляємо асинхронно щоб не блокувати програму
+        }).start();
     }
 
     private void sendEmailViaJavaMail(String className, String message, String logEntry) {
         try {
-            // Створюємо сесію та повідомлення
             Session session = createMailSession();
             Message mailMessage = new MimeMessage(session);
 
-            // Налаштування відправника та отримувача
             mailMessage.setFrom(new InternetAddress(emailFrom));
             mailMessage.setRecipients(
                     Message.RecipientType.TO,
                     InternetAddress.parse(emailTo));
 
-            // Тема листа
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
             mailMessage.setSubject("🚨 КРИТИЧНА ПОМИЛКА в Music System - " + timestamp);
 
-            // Тіло листа
             String emailBody = buildEmailBody(className, message, logEntry, timestamp);
             mailMessage.setContent(emailBody, "text/html; charset=utf-8");
 
-            // Відправка
             Transport.send(mailMessage);
 
             System.out.println("✓ Email з критичною помилкою відправлено на: " + emailTo);
@@ -126,14 +115,12 @@ public class EmailNotifier {
         body.append("<html><head><meta charset='UTF-8'></head><body>");
         body.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>");
 
-        // Заголовок
         body.append(
                 "<div style='background-color: #d32f2f; color: white; padding: 20px; border-radius: 5px 5px 0 0;'>");
         body.append("<h2 style='margin: 0;'>🚨 КРИТИЧНА ПОМИЛКА</h2>");
         body.append("<p style='margin: 5px 0 0 0;'>Music System Management</p>");
         body.append("</div>");
 
-        // Основна інформація
         body.append("<div style='background-color: #f5f5f5; padding: 20px; border-radius: 0 0 5px 5px;'>");
 
         body.append(
@@ -145,7 +132,6 @@ public class EmailNotifier {
                 .append("</p>");
         body.append("</div>");
 
-        // Лог запис
         body.append(
                 "<div style='background-color: #263238; color: #aed581; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;'>");
         body.append("<p style='margin: 0 0 5px 0; color: #90a4ae;'><strong>Лог запис:</strong></p>");
@@ -153,7 +139,6 @@ public class EmailNotifier {
                 .append(escapeHtml(logEntry)).append("</pre>");
         body.append("</div>");
 
-        // Рекомендації
         body.append(
                 "<div style='background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; margin-top: 15px; border-radius: 5px;'>");
         body.append("<p style='margin: 0; color: #856404;'><strong>⚠️ Рекомендовані дії:</strong></p>");
@@ -166,7 +151,6 @@ public class EmailNotifier {
 
         body.append("</div>");
 
-        // Футер
         body.append("<div style='text-align: center; padding: 20px; color: #999; font-size: 12px;'>");
         body.append("<p style='margin: 0;'>Це автоматичне повідомлення від Music System Management</p>");
         body.append("<p style='margin: 5px 0 0 0;'>Будь ласка, не відповідайте на цей email</p>");

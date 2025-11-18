@@ -27,7 +27,7 @@ class FileManagerTest {
                 180, 2020, "Lyrics", true);
 
         Instrumental instrumental = new Instrumental("Test Instrumental", "Composer",
-                MusicStyle.CLASSICAL, 300, 1800,
+                MusicStyle.CLASSICAL, 300, 1900,
                 Arrays.asList("Piano", "Violin"));
 
         Remix remix = new Remix("Test Remix", "Artist", MusicStyle.ELECTRONIC,
@@ -123,7 +123,7 @@ class FileManagerTest {
         // ARRANGE
         MusicCollection singleCollection = new MusicCollection();
         Instrumental inst = new Instrumental("Title", "Composer", MusicStyle.CLASSICAL,
-                300, 1800, Arrays.asList("Piano", "Violin"));
+                300, 1900, Arrays.asList("Piano", "Violin"));
         inst.setId(101);
         singleCollection.add(inst);
 
@@ -264,5 +264,39 @@ class FileManagerTest {
 
         // ASSERT
         assertEquals(collection.getTotalCount(), loaded.getTotalCount());
+    }
+
+    @Test
+    @DisplayName("saveToDefaultFile() зберігає у файл за замовчуванням")
+    void testSaveToDefaultFile() throws IOException {
+        // ACT
+        fileManager.saveToDefaultFile(collection);
+
+        // ASSERT
+        assertTrue(fileManager.defaultFileExists(), "Файл за замовчуванням має існувати");
+    }
+
+    @Test
+    @DisplayName("loadFromDefaultFile() завантажує з файлу за замовчуванням")
+    void testLoadFromDefaultFile() throws IOException {
+        // ARRANGE
+        fileManager.saveToDefaultFile(collection);
+
+        // ACT
+        MusicCollection loaded = new MusicCollection();
+        fileManager.loadFromDefaultFile(loaded);
+
+        // ASSERT
+        assertTrue(loaded.getTotalCount() > 0, "Має бути завантажено композиції");
+    }
+
+    @Test
+    @DisplayName("createDefaultFile() створює файл якщо він не існує")
+    void testCreateDefaultFileWhenNotExists() {
+        // ACT
+        fileManager.createDefaultFile();
+
+        // ASSERT
+        assertTrue(fileManager.defaultFileExists());
     }
 }

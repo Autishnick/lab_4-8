@@ -22,9 +22,9 @@ class DiskManagerTest {
         Song song1 = new Song("Song", "Artist", MusicStyle.ROCK, 300, 2020); // 5 хв
         smallCompilation.addTrack(song1);
 
-        // Велика збірка (~1000 MB)
+        // Велика збірка (~4700 MB - максимальний розмір для DVD)
         largeCompilation = new Compilation("Large", "Desc");
-        for (int i = 0; i < 200; i++) { // 200 * 5 хв = 1000 хв
+        for (int i = 0; i < 188; i++) { // 188 * 5 хв = 940 хв = 4700 MB
             Song song = new Song("Song" + i, "Artist", MusicStyle.ROCK, 300, 2020);
             largeCompilation.addTrack(song);
         }

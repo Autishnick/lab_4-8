@@ -1,6 +1,5 @@
 package com.musicsystem.util;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -8,7 +7,7 @@ import java.util.Properties;
 public class ConfigManager {
     private static ConfigManager instance;
     private Properties properties;
-    private static final String CONFIG_FILE = "resources/data/config.properties";
+    private static final String CONFIG_FILE = "data/config.properties";
 
     private ConfigManager() {
         properties = new Properties();
@@ -23,8 +22,13 @@ public class ConfigManager {
     }
 
     private void loadConfig() {
-        try (InputStream input = new FileInputStream(CONFIG_FILE)) {
-            properties.load(input);
+        try (InputStream input = ConfigManager.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
+            if (input != null) {
+                properties.load(input);
+            } else {
+                System.err.println("Не вдалося знайти конфігураційний файл: " + CONFIG_FILE);
+                loadDefaultConfig();
+            }
         } catch (IOException e) {
             System.err.println("Не вдалося завантажити конфігурацію: " + e.getMessage());
             loadDefaultConfig();
@@ -69,8 +73,6 @@ public class ConfigManager {
         }
         return Boolean.parseBoolean(value);
     }
-
-    // Геттери для часто використовуваних параметрів
 
     public String getDataFilePath() {
         return getProperty("data.file.path", "data/compositions.txt");

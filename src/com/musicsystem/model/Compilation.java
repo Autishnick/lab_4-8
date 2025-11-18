@@ -98,7 +98,6 @@ public class Compilation {
     }
 
     public int estimateSizeMB() {
-        // Припускаємо середній розмір файлу 5 MB за хвилину (320 kbps MP3)
         int totalMinutes = calculateDuration() / 60;
         return totalMinutes * 5;
     }

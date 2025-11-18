@@ -4,11 +4,11 @@ import com.musicsystem.command.Command;
 import com.musicsystem.service.MusicCollection;
 import com.musicsystem.util.FileManager;
 import com.musicsystem.util.InputValidator;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LoadFromFileCommand implements Command {
-    private static final String CLASS_NAME = "LoadFromFileCommand";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(LoadFromFileCommand.class);
     
     private MusicCollection collection;
     private FileManager fileManager;
@@ -24,7 +24,7 @@ public class LoadFromFileCommand implements Command {
 
     @Override
     public void execute() {
-        logger.info(CLASS_NAME, "Виконання команди завантаження з файлу");
+        logger.info("Виконання команди завантаження з файлу");
         System.out.println("\n=== ЗАВАНТАЖЕННЯ З ФАЙЛУ ===\n");
 
         System.out.println("1. Завантажити з файлу за замовчуванням (data/compositions.txt)");
@@ -34,7 +34,7 @@ public class LoadFromFileCommand implements Command {
         int choice = validator.readInt("Ваш вибір: ", 0, 2);
 
         if (choice == 0) {
-            logger.info(CLASS_NAME, "Користувач скасував завантаження");
+            logger.info("Користувач скасував завантаження");
             System.out.println("Завантаження скасовано.");
             return;
         }
@@ -42,24 +42,24 @@ public class LoadFromFileCommand implements Command {
         try {
             if (choice == 1) {
                 if (!fileManager.defaultFileExists()) {
-                    logger.warn(CLASS_NAME, "Файл за замовчуванням не існує");
+                    logger.warn("Файл за замовчуванням не існує");
                     System.out.println("Файл за замовчуванням не існує.");
                     boolean create = validator.readBoolean("Створити файл з прикладами?");
                     if (create) {
                         fileManager.createDefaultFile();
                     } else {
-                        logger.info(CLASS_NAME, "Користувач відмовився від створення файлу за замовчуванням");
+                        logger.info("Користувач відмовився від створення файлу за замовчуванням");
                         return;
                     }
                 }
 
-                logger.info(CLASS_NAME, "Завантаження з файлу за замовчуванням");
+                logger.info("Завантаження з файлу за замовчуванням");
                 fileManager.loadFromDefaultFile(collection);
                 System.out.println("\n✓ Дані успішно завантажено з файлу за замовчуванням!");
 
             } else {
                 String filename = validator.readNonEmptyString("Введіть шлях до файлу: ");
-                logger.info(CLASS_NAME, "Завантаження з файлу: " + filename);
+                logger.info("Завантаження з файлу: " + filename);
                 fileManager.loadFromFile(collection, filename);
                 System.out.println("\n✓ Дані успішно завантажено з файлу: " + filename);
             }
@@ -67,7 +67,7 @@ public class LoadFromFileCommand implements Command {
             System.out.println("Завантажено композицій: " + collection.getTotalCount());
 
         } catch (Exception e) {
-            logger.error(CLASS_NAME, "Помилка завантаження файлу: " + e.getMessage(), e);
+            logger.error("Помилка завантаження файлу: " + e.getMessage(), e);
             System.out.println("\n✗ Помилка завантаження: " + e.getMessage());
         }
 

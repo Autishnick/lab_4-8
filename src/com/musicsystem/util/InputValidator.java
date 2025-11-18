@@ -92,7 +92,6 @@ public class InputValidator {
                     }
                 }
             } catch (NumberFormatException e) {
-                // Продовжуємо цикл
             }
 
             System.out.println("Помилка: введіть тривалість у форматі MM:SS або HH:MM:SS");

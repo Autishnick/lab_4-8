@@ -3,14 +3,14 @@ package com.musicsystem.service;
 import com.musicsystem.model.Compilation;
 import com.musicsystem.model.Disk;
 import com.musicsystem.model.DiskType;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiskManager {
-    private static final String CLASS_NAME = "DiskManager";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(DiskManager.class);
 
     private List<Disk> disks;
 
@@ -19,42 +19,42 @@ public class DiskManager {
     }
 
     public Disk burnCompilation(Compilation compilation, DiskType diskType) {
-        logger.info(CLASS_NAME, "Початок запису збірки '" + (compilation != null ? compilation.getName() : "null") + 
+        logger.info("Початок запису збірки '" + (compilation != null ? compilation.getName() : "null") + 
                     "' на диск типу: " + diskType);
         
         if (compilation == null) {
-            logger.error(CLASS_NAME, "Спроба записати null збірку на диск");
+            logger.error("Спроба записати null збірку на диск");
             throw new IllegalArgumentException("Збірка не може бути null");
         }
 
         if (compilation.getTrackCount() == 0) {
-            logger.error(CLASS_NAME, "Спроба записати порожню збірку на диск");
+            logger.error("Спроба записати порожню збірку на диск");
             throw new IllegalArgumentException("Збірка порожня, неможливо записати на диск");
         }
 
         Disk disk = new Disk(diskType, compilation);
-        logger.debug(CLASS_NAME, "Створено диск. Потрібно: " + disk.getUsedSpaceMB() + " MB, Доступно: " + disk.getCapacityMB() + " MB");
+        logger.debug("Створено диск. Потрібно: " + disk.getUsedSpaceMB() + " MB, Доступно: " + disk.getCapacityMB() + " MB");
 
         if (!disk.checkCapacity()) {
             String errorMsg = String.format("Збірка не вміщується на диск %s. Потрібно: %d MB, Доступно: %d MB",
                             diskType, disk.getUsedSpaceMB(), disk.getCapacityMB());
-            logger.error(CLASS_NAME, errorMsg);
+            logger.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
         }
 
         disks.add(disk);
-        logger.info(CLASS_NAME, "✓ Збірку успішно записано на диск (ID: " + disk.getId() + ", Тип: " + diskType + ")");
+        logger.info("✓ Збірку успішно записано на диск (ID: " + disk.getId() + ", Тип: " + diskType + ")");
         return disk;
     }
 
     public boolean deleteDisk(int id) {
-        logger.info(CLASS_NAME, "Видалення диска з ID: " + id);
+        logger.info("Видалення диска з ID: " + id);
         boolean deleted = disks.removeIf(d -> d.getId() == id);
         
         if (deleted) {
-            logger.info(CLASS_NAME, "✓ Диск успішно видалено (ID: " + id + ")");
+            logger.info("✓ Диск успішно видалено (ID: " + id + ")");
         } else {
-            logger.warn(CLASS_NAME, "Диск з ID " + id + " не знайдено");
+            logger.warn("Диск з ID " + id + " не знайдено");
         }
         
         return deleted;
@@ -84,7 +84,7 @@ public class DiskManager {
     public void clear() {
         int count = disks.size();
         disks.clear();
-        logger.info(CLASS_NAME, "Очищено список дисків (видалено " + count + " дисків)");
+        logger.info("Очищено список дисків (видалено " + count + " дисків)");
     }
 
     public boolean isEmpty() {
@@ -99,7 +99,7 @@ public class DiskManager {
 
     public DiskType recommendDiskType(Compilation compilation) {
         int requiredSpace = compilation.estimateSizeMB();
-        logger.debug(CLASS_NAME, "Визначення рекомендованого типу диска для збірки '" + compilation.getName() + 
+        logger.debug("Визначення рекомендованого типу диска для збірки '" + compilation.getName() + 
                      "' (потрібно: " + requiredSpace + " MB)");
 
         DiskType recommended;
@@ -111,7 +111,7 @@ public class DiskManager {
             recommended = DiskType.BLURAY;
         }
         
-        logger.info(CLASS_NAME, "Рекомендовано тип диска: " + recommended);
+        logger.info("Рекомендовано тип диска: " + recommended);
         return recommended;
     }
 }

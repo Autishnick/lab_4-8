@@ -2,17 +2,14 @@ package com.musicsystem.command.impl;
 
 import com.musicsystem.command.Command;
 import com.musicsystem.util.InputValidator;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-/**
- * Команда для запуску юніт-тестів
- */
 public class RunUnitTestsCommand implements Command {
-    private static final String CLASS_NAME = "RunUnitTestsCommand";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(RunUnitTestsCommand.class);
     private InputValidator validator;
 
     public RunUnitTestsCommand(InputValidator validator) {
@@ -23,7 +20,7 @@ public class RunUnitTestsCommand implements Command {
     public void execute() {
         System.out.println("\n═══ ЮНІТ-ТЕСТИ ═══\n");
 
-        logger.info(CLASS_NAME, "Запуск юніт-тестів");
+        logger.debug("Запуск юніт-тестів");
 
         System.out.println("1. Всі тести");
         System.out.println("2. Тести моделей");
@@ -52,14 +49,12 @@ public class RunUnitTestsCommand implements Command {
                 new InputStreamReader(process.getInputStream())
             );
 
-            // Показуємо тільки важливі рядки
             String line;
             int testCount = 0;
             int passedCount = 0;
             boolean showLine = false;
 
             while ((line = reader.readLine()) != null) {
-                // Показуємо тільки результати тестів та підсумки
                 if (line.contains("Tests run:") || line.contains("OK (") || 
                     line.contains("FAILURES!!!") || line.contains("Test") ||
                     line.contains("✓") || line.contains("✗") ||
@@ -77,16 +72,16 @@ public class RunUnitTestsCommand implements Command {
             System.out.println();
             if (exitCode == 0) {
                 System.out.println("✅ УСПІШНО - всі тести пройдено!");
-                logger.info(CLASS_NAME, "Юніт-тести пройдено: " + testName);
+                logger.debug("Юніт-тести пройдено: " + testName);
             } else {
                 System.out.println("❌ ПРОВАЛЕНО - є помилки в тестах");
-                logger.warn(CLASS_NAME, "Юніт-тести провалились: " + testName);
+                logger.warn("Юніт-тести провалились: " + testName);
             }
 
         } catch (Exception e) {
             System.out.println("\n❌ Помилка: " + e.getMessage());
             System.out.println("💡 Спробуйте: ./test_all.sh");
-            logger.error(CLASS_NAME, "Помилка запуску юніт-тестів: " + e.getMessage(), e);
+            logger.error("Помилка запуску юніт-тестів: " + e.getMessage(), e);
         }
 
         System.out.println();
@@ -95,7 +90,7 @@ public class RunUnitTestsCommand implements Command {
 
     private String getTestPath(int choice) {
         switch (choice) {
-            case 1: return "";  // Всі тести
+            case 1: return "";
             case 2: return "model";
             case 3: return "service";
             case 4: return "util";

@@ -223,4 +223,14 @@ class InputValidatorTest {
         // ASSERT
         assertEquals(210, result);
     }
+
+    @Test
+    @DisplayName("waitForEnter() очікує натискання Enter")
+    void testWaitForEnter() {
+        // ARRANGE
+        validator = createValidatorWithInput("\n");
+
+        // ACT & ASSERT
+        assertDoesNotThrow(() -> validator.waitForEnter());
+    }
 }

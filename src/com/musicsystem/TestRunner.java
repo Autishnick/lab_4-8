@@ -3,10 +3,6 @@ package com.musicsystem;
 import com.musicsystem.model.*;
 import com.musicsystem.service.*;
 
-/**
- * Simple class for quick functional verification
- * without running JUnit tests
- */
 public class TestRunner {
 
     public static void main(String[] args) {

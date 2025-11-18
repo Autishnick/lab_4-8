@@ -7,7 +7,6 @@ import com.musicsystem.service.CompilationManager;
 import com.musicsystem.service.MusicCollection;
 import com.musicsystem.util.InputValidator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CreateCompilationCommand implements Command {

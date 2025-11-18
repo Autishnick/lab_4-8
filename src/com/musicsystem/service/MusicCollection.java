@@ -2,15 +2,15 @@ package com.musicsystem.service;
 
 import com.musicsystem.model.MusicComposition;
 import com.musicsystem.model.MusicStyle;
-import com.musicsystem.util.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MusicCollection {
-    private static final String CLASS_NAME = "MusicCollection";
-    private static final Logger logger = Logger.getInstance();
+    private static final Logger logger = LogManager.getLogger(MusicCollection.class);
 
     private List<MusicComposition> compositions;
 
@@ -21,9 +21,9 @@ public class MusicCollection {
     public void add(MusicComposition composition) {
         if (composition != null && composition.validate()) {
             compositions.add(composition);
-            logger.info(CLASS_NAME, "Додано композицію: " + composition.getTitle() + " (ID: " + composition.getId() + ")");
+            logger.info("Додано композицію: " + composition.getTitle() + " (ID: " + composition.getId() + ")");
         } else {
-            logger.error(CLASS_NAME, "Спроба додати невалідну композицію");
+            logger.error("Спроба додати невалідну композицію");
             throw new IllegalArgumentException("Невалідна композиція");
         }
     }
@@ -31,9 +31,9 @@ public class MusicCollection {
     public boolean remove(MusicComposition composition) {
         boolean removed = compositions.remove(composition);
         if (removed) {
-            logger.info(CLASS_NAME, "Видалено композицію: " + composition.getTitle() + " (ID: " + composition.getId() + ")");
+            logger.info("Видалено композицію: " + composition.getTitle() + " (ID: " + composition.getId() + ")");
         } else {
-            logger.warn(CLASS_NAME, "Спроба видалити неіснуючу композицію");
+            logger.warn("Спроба видалити неіснуючу композицію");
         }
         return removed;
     }
@@ -41,7 +41,7 @@ public class MusicCollection {
     public boolean remove(int id) {
         boolean removed = compositions.removeIf(c -> c.getId() == id);
         if (removed) {
-            logger.info(CLASS_NAME, "Видалено композицію по ID: " + id);
+            logger.info("Видалено композицію по ID: " + id);
         }
         return removed;
     }
